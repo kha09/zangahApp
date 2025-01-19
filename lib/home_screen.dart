@@ -146,19 +146,16 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(
             child: Stack(
               children: [
-                // Background dotted lines
-                CustomPaint(
-                  size: Size.infinite,
-                  painter: DottedLinesPainter(),
-                ),
                 // Content
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Paper airplane
-                    CustomPaint(
-                      size: const Size(200, 200),
-                      painter: PaperAirplanePainter(),
+                    // Main image
+                    Image.asset(
+                      'assets/images/path_group.png',
+                      width: 200,
+                      height: 200,
+                      fit: BoxFit.contain,
                     ),
                     const SizedBox(height: 32),
                     // Welcome text
@@ -194,67 +191,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
-        backgroundColor: const Color(0xFF4666F6),
+        backgroundColor: const Color.fromARGB(255, 188, 195, 226),
         child: const Icon(Icons.add, size: 32),
       ),
     );
   }
-}
-
-class DottedLinesPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF4A1E9E).withOpacity(0.1)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    final path = Path();
-    for (var i = 0; i < size.width; i += 10) {
-      path.moveTo(i.toDouble(), 0);
-      path.lineTo(i.toDouble() + 5, size.height);
-    }
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class PaperAirplanePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF4A1E9E)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    final path = Path()
-      ..moveTo(size.width * 0.2, size.height * 0.6)
-      ..lineTo(size.width * 0.8, size.height * 0.2)
-      ..lineTo(size.width * 0.8, size.height * 0.6)
-      ..close();
-
-    canvas.drawPath(path, paint);
-
-    // Draw dotted flight path
-    final dashPaint = Paint()
-      ..color = const Color(0xFF4A1E9E)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    final flightPath = Path()
-      ..moveTo(size.width * 0.2, size.height * 0.8)
-      ..quadraticBezierTo(
-        size.width * 0.5,
-        size.height * 0.5,
-        size.width * 0.8,
-        size.height * 0.8,
-      );
-
-    canvas.drawPath(flightPath, dashPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
