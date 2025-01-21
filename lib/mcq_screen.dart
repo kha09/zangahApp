@@ -72,10 +72,11 @@ class _MCQScreenState extends State<MCQScreen> {
             ),
 
             // Question Numbers
-            Padding(
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.all(16.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: List.generate(11, (index) {
                   final questionNumber = 11 - index;
                   final status = _questionStatus[10 - index];
