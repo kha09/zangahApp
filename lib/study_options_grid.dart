@@ -17,39 +17,53 @@ class StudyOptionCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        width: 200,
+        height: 200,
+        margin: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Colors.cyan,
+            width: 2,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.blue.withOpacity(0.1),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 10,
-              spreadRadius: 2,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                arabicText,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.purple[800],
+              Flexible(
+                child: Text(
+                  arabicText,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.cyan.shade700,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                englishText,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 20,
-                  color: Colors.purple[800],
+              const SizedBox(height: 4),
+              Flexible(
+                child: Text(
+                  englishText,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.cyan.shade700,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -65,23 +79,28 @@ class StudyOptionsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        StudyOptionCard(
-          arabicText: 'بطاقات تذكر',
-          englishText: 'Flash Cards',
-          onTap: () {
-            // Handle flash cards tap
-          },
-        ),
-        StudyOptionCard(
-          arabicText: 'اختيار من متعدد',
-          englishText: 'MCQ',
-          onTap: () {
-            // Handle MCQ tap
-          },
-        ),
-      ],
+    return Center(
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 16,
+        runSpacing: 16,
+        children: [
+          StudyOptionCard(
+            arabicText: 'بطاقات تذكر',
+            englishText: 'Flash Cards',
+            onTap: () {
+              // Handle flash cards tap
+            },
+          ),
+          StudyOptionCard(
+            arabicText: 'اختيار من متعدد',
+            englishText: 'MCQ',
+            onTap: () {
+              // Handle MCQ tap
+            },
+          ),
+        ],
+      ),
     );
   }
 }
