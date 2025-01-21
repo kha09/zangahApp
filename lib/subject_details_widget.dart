@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'study_plan_timeline.dart';
+import 'study_options_screen.dart';
 
 class SubjectDetailsWidget extends StatelessWidget {
   final String subject;
@@ -54,7 +55,15 @@ class SubjectDetailsWidget extends StatelessWidget {
                 context,
                 'الاسئلة',
                 onTap: () {
-                  // Handle questions tap
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StudyOptionsScreen(
+                        subject: subject,
+                        semester: semester,
+                      ),
+                    ),
+                  );
                 },
               ),
             ],
