@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'upload_dialog.dart';
 import 'subject_card.dart';
+import 'subject_details_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,6 +12,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int selectedTab = 0;
+  String? selectedSubject;
+  String? selectedSemester;
 
   @override
   Widget build(BuildContext context) {
@@ -149,15 +152,32 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Stack(
               children: [
                 selectedTab == 0
-                    ? Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: SubjectCard(
-                          subject: 'رياضيات',
-                          semester: 'الفصل الأول',
-                          schedule: 'جدول دراسي',
-                          questions: 'أسئلة',
-                        ),
-                      )
+                    ? selectedSubject != null
+                        ? SubjectDetailsWidget(
+                            subject: selectedSubject!,
+                            semester: selectedSemester!,
+                            onBack: () {
+                              setState(() {
+                                selectedSubject = null;
+                                selectedSemester = null;
+                              });
+                            },
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: SubjectCard(
+                              subject: 'رياضيات',
+                              semester: 'الفصل الأول',
+                              schedule: 'جدول دراسي',
+                              questions: 'أسئلة',
+                              onTap: (subject, semester) {
+                                setState(() {
+                                  selectedSubject = subject;
+                                  selectedSemester = semester;
+                                });
+                              },
+                            ),
+                          )
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
