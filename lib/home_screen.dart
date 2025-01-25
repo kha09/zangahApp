@@ -249,7 +249,6 @@ class _HomeScreenState extends State<HomeScreen> {
             setState(() {
               subjects.add({
                 'subject': result['subject'],
-                'filePath': result['filePath'],
                 'fileName': result['fileName'],
                 'hasSchedule': result['hasSchedule'],
                 'hasQuestions': result['hasQuestions'],

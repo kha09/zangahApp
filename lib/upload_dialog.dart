@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
-import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' if (dart.library.io) 'stub.dart' as universal;
 
 class UploadDialog extends StatefulWidget {
   const UploadDialog({super.key});
@@ -15,34 +16,25 @@ class _UploadDialogState extends State<UploadDialog> {
   bool isQuestionsChecked = false;
   bool isSummaryChecked = false;
   String? selectedFileName;
-  File? selectedFile;
 
-  Future<void> _pickFile() async {
-    try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.any,
-        allowMultiple: false,
-      );
-      
-      if (result != null && result.files.isNotEmpty) {
-        setState(() {
-          if (result.files.single.path != null) {
-            selectedFile = File(result.files.single.path!);
-            selectedFileName = result.files.single.name;
-          } else {
-            // For web platform
-            selectedFileName = result.files.single.name;
+  void _pickFile() {
+    if (kIsWeb) {
+      try {
+        final input = universal.FileUploadInputElement()
+          ..style.display = 'none'
+          ..multiple = false;
+        
+        input.onChange.listen((event) {
+          if (input.files?.isNotEmpty == true) {
+            setState(() {
+              selectedFileName = input.files![0].name;
+            });
           }
         });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error picking file: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+
+        input.click();
+      } catch (e) {
+        print('Error picking file: $e');
       }
     }
   }
@@ -130,29 +122,23 @@ class _UploadDialogState extends State<UploadDialog> {
             const SizedBox(height: 24),
             
             // Upload button
-            InkWell(
-              onTap: _pickFile,
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.blue[800]!,
-                    width: 1,
-                    style: BorderStyle.solid,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.blue.shade800),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: TextButton(
+                onPressed: _pickFile,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.cloud_upload_outlined, color: Colors.blue[800]),
+                    Icon(Icons.upload_file, color: Colors.blue[800]),
                     const SizedBox(width: 8),
                     Text(
                       selectedFileName ?? 'رفع الملف',
                       style: TextStyle(
                         color: Colors.blue[800],
                         fontSize: 16,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
@@ -169,7 +155,6 @@ class _UploadDialogState extends State<UploadDialog> {
                     'hasSchedule': isScheduleChecked,
                     'hasQuestions': isQuestionsChecked,
                     'hasSummary': isSummaryChecked,
-                    'filePath': selectedFile?.path,
                     'fileName': selectedFileName ?? '',
                   });
                 }
