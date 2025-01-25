@@ -1,16 +1,51 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 
 class UploadDialog extends StatefulWidget {
-  const UploadDialog({Key? key}) : super(key: key);
+  const UploadDialog({super.key});
 
   @override
   State<UploadDialog> createState() => _UploadDialogState();
 }
 
 class _UploadDialogState extends State<UploadDialog> {
+  final TextEditingController _subjectController = TextEditingController();
   bool isScheduleChecked = false;
   bool isQuestionsChecked = false;
   bool isSummaryChecked = false;
+  String? selectedFileName;
+  File? selectedFile;
+
+  Future<void> _pickFile() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.any,
+        allowMultiple: false,
+      );
+      
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          if (result.files.single.path != null) {
+            selectedFile = File(result.files.single.path!);
+            selectedFileName = result.files.single.name;
+          } else {
+            // For web platform
+            selectedFileName = result.files.single.name;
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error picking file: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,11 +79,12 @@ class _UploadDialogState extends State<UploadDialog> {
             ),
             const SizedBox(height: 16),
             
-            // Text field
+            // Subject text field
             TextField(
+              controller: _subjectController,
               textAlign: TextAlign.right,
               decoration: InputDecoration(
-                hintText: 'اسم الملف الذي سيتم رفعه',
+                hintText: 'اسم المادة الدراسية',
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 filled: true,
                 fillColor: Colors.blue[50],
@@ -95,9 +131,7 @@ class _UploadDialogState extends State<UploadDialog> {
             
             // Upload button
             InkWell(
-              onTap: () {
-                // Handle upload
-              },
+              onTap: _pickFile,
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
@@ -114,7 +148,7 @@ class _UploadDialogState extends State<UploadDialog> {
                     Icon(Icons.cloud_upload_outlined, color: Colors.blue[800]),
                     const SizedBox(width: 8),
                     Text(
-                      'رفع الملف',
+                      selectedFileName ?? 'رفع الملف',
                       style: TextStyle(
                         color: Colors.blue[800],
                         fontSize: 16,
@@ -125,11 +159,20 @@ class _UploadDialogState extends State<UploadDialog> {
                 ),
               ),
             ),
-            // New Create Content Button
+            // Create Content Button
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                // Handle create content
+                if (_subjectController.text.isNotEmpty) {
+                  Navigator.of(context).pop({
+                    'subject': _subjectController.text,
+                    'hasSchedule': isScheduleChecked,
+                    'hasQuestions': isQuestionsChecked,
+                    'hasSummary': isSummaryChecked,
+                    'filePath': selectedFile?.path,
+                    'fileName': selectedFileName ?? '',
+                  });
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.purple[700],

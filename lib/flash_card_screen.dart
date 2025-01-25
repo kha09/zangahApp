@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'mcq_screen.dart';
 
 class FlashCardScreen extends StatefulWidget {
-  const FlashCardScreen({Key? key}) : super(key: key);
+  const FlashCardScreen({super.key});
 
   @override
   State<FlashCardScreen> createState() => _FlashCardScreenState();
@@ -10,7 +10,7 @@ class FlashCardScreen extends StatefulWidget {
 
 class _FlashCardScreenState extends State<FlashCardScreen> {
   bool _isFlipped = false;
-  int _currentIndex = 6; // 7th question (0-based index)
+  final int _currentIndex = 6; // 7th question (0-based index)
 
   @override
   Widget build(BuildContext context) {

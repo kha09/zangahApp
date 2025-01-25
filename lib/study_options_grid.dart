@@ -8,11 +8,11 @@ class StudyOptionCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const StudyOptionCard({
-    Key? key,
+    super.key,
     required this.arabicText,
     required this.englishText,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +83,7 @@ class StudyOptionCard extends StatelessWidget {
 }
 
 class StudyOptionsGrid extends StatelessWidget {
-  const StudyOptionsGrid({Key? key}) : super(key: key);
+  const StudyOptionsGrid({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 class SubjectCard extends StatelessWidget {
   const SubjectCard({
-    Key? key,
+    super.key,
     required this.subject,
     required this.semester,
     required this.schedule,
     required this.questions,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   final String subject;
   final String semester;
@@ -18,8 +18,9 @@ class SubjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: () => onTap(subject, semester),
+      borderRadius: BorderRadius.circular(20),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -47,7 +48,7 @@ class SubjectCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                '$subject - $semester',
+                subject,
                 textAlign: TextAlign.right,
                 style: const TextStyle(
                   color: Colors.black87,

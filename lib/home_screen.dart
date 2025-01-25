@@ -14,6 +14,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int selectedTab = 0;
   String? selectedSubject;
   String? selectedSemester;
+  List<Map<String, dynamic>> subjects = [];
 
   @override
   Widget build(BuildContext context) {
@@ -163,21 +164,40 @@ class _HomeScreenState extends State<HomeScreen> {
                               });
                             },
                           )
-                        : Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: SubjectCard(
-                              subject: 'رياضيات',
-                              semester: 'الفصل الأول',
-                              schedule: 'جدول دراسي',
-                              questions: 'أسئلة',
-                              onTap: (subject, semester) {
-                                setState(() {
-                                  selectedSubject = subject;
-                                  selectedSemester = semester;
-                                });
-                              },
-                            ),
-                          )
+                        : subjects.isEmpty
+                            ? Center(
+                                child: Text(
+                                  'لا يوجد مواد. اضغط على + لإضافة مادة',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              )
+                            : SafeArea(
+                                child: ListView.builder(
+                                  padding: const EdgeInsets.all(16.0),
+                                  itemCount: subjects.length,
+                                  itemBuilder: (context, index) {
+                                    final subject = subjects[index];
+                                    return Padding(
+                                      padding: const EdgeInsets.only(bottom: 16.0),
+                                      child: SubjectCard(
+                                        subject: subject['subject'] as String,
+                                      semester: '',
+                                        schedule: subject['hasSchedule'] == true ? 'جدول دراسي' : '',
+                                        questions: subject['hasQuestions'] == true ? 'أسئلة' : '',
+                                        onTap: (subjectName, semester) {
+                                          setState(() {
+                                            selectedSubject = subjectName;
+                                            selectedSemester = '';
+                                          });
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                              )
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -219,11 +239,24 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
+        onPressed: () async {
+          final result = await showDialog<Map<String, dynamic>>(
             context: context,
             builder: (context) => const UploadDialog(),
           );
+          
+          if (result != null) {
+            setState(() {
+              subjects.add({
+                'subject': result['subject'],
+                'filePath': result['filePath'],
+                'fileName': result['fileName'],
+                'hasSchedule': result['hasSchedule'],
+                'hasQuestions': result['hasQuestions'],
+                'hasSummary': result['hasSummary'],
+              });
+            });
+          }
         },
         backgroundColor: const Color(0xFF4666F6),
         child: const Icon(Icons.add, size: 32),

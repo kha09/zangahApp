@@ -18,9 +18,9 @@ class StudyPlanTimeline extends StatelessWidget {
   final List<StudyPlanItem> items;
 
   const StudyPlanTimeline({
-    Key? key,
+    super.key,
     required this.items,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

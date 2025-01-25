@@ -5,10 +5,10 @@ class SubjectDetailsScreen extends StatelessWidget {
   final String semester;
 
   const SubjectDetailsScreen({
-    Key? key,
+    super.key,
     required this.subject,
     required this.semester,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

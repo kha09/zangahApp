@@ -8,11 +8,11 @@ class SubjectDetailsWidget extends StatelessWidget {
   final VoidCallback onBack;
 
   const SubjectDetailsWidget({
-    Key? key,
+    super.key,
     required this.subject,
     required this.semester,
     required this.onBack,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

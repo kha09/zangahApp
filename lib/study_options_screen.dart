@@ -7,10 +7,10 @@ class StudyOptionsScreen extends StatelessWidget {
   final String semester;
 
   const StudyOptionsScreen({
-    Key? key,
+    super.key,
     required this.subject,
     required this.semester,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class MCQScreen extends StatefulWidget {
-  const MCQScreen({Key? key}) : super(key: key);
+  const MCQScreen({super.key});
 
   @override
   State<MCQScreen> createState() => _MCQScreenState();
@@ -9,7 +9,7 @@ class MCQScreen extends StatefulWidget {
 
 class _MCQScreenState extends State<MCQScreen> {
   int? _selectedAnswer;
-  int _currentIndex = 6; // 7th question (0-based index)
+  final int _currentIndex = 6; // 7th question (0-based index)
 
   final List<String> _answers = ['x = 6', 'x = -2', 'x = -4', 'x = 4'];
   final Map<int, Color> _questionStatus = {
@@ -90,7 +90,7 @@ class _MCQScreenState extends State<MCQScreen> {
                         color: status ?? Colors.grey,
                         width: 2,
                       ),
-                      color: status != null ? status : Colors.transparent,
+                      color: status ?? Colors.transparent,
                     ),
                     child: Center(
                       child: Text(
