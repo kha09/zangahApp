@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'mcq_screen.dart';
+import 'services/api_service.dart';
 
 class FlashCardScreen extends StatefulWidget {
   const FlashCardScreen({super.key});
@@ -10,7 +10,37 @@ class FlashCardScreen extends StatefulWidget {
 
 class _FlashCardScreenState extends State<FlashCardScreen> {
   bool _isFlipped = false;
-  final int _currentIndex = 6; // 7th question (0-based index)
+  int _currentIndex = 0;
+  List<Map<String, String>> _flashcards = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFlashcards();
+  }
+
+  Future<void> _loadFlashcards() async {
+    try {
+      final cards = await ApiService.getFlashcards();
+      setState(() {
+        _flashcards = cards;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('فشل تحميل البطاقات: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,161 +111,192 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 16),
-
-          // Subtitle
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text(
-              'اسئلة : رياضيات - الفصل الأول',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue[400],
-              ),
-              textAlign: TextAlign.right,
-            ),
-          ),
-
-          // Question Numbers
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(11, (index) {
-                final questionNumber = 11 - index;
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: questionNumber == 7 ? Colors.blue : Colors.grey,
-                      width: 2,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _flashcards.isEmpty
+              ? Center(
+                  child: Text(
+                    'لا توجد بطاقات متاحة',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey[600],
                     ),
-                    color: questionNumber == 7 ? Colors.blue : Colors.transparent,
                   ),
-                  child: Center(
-                    child: Text(
-                      '$questionNumber',
-                      style: TextStyle(
-                        color: questionNumber == 7 ? Colors.white : Colors.grey,
-                        fontWeight: FontWeight.bold,
+                )
+              : Column(
+                  children: [
+                    const SizedBox(height: 16),
+
+                    // Subtitle
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text(
+                        'اسئلة : رياضيات - الفصل الأول',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue[400],
+                        ),
+                        textAlign: TextAlign.right,
                       ),
                     ),
-                  ),
-                );
-              }),
-            ),
-          ),
 
-          // Flash Card
-          Expanded(
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _isFlipped = !_isFlipped;
-                });
-              },
-              child: TweenAnimationBuilder(
-                tween: Tween<double>(
-                  begin: 0,
-                  end: _isFlipped ? 180 : 0,
-                ),
-                duration: const Duration(milliseconds: 300),
-                builder: (context, double value, child) {
-                  return Transform(
-                    transform: Matrix4.identity()
-                      ..setEntry(3, 2, 0.001)
-                      ..rotateY(value * 3.1415927 / 180),
-                    alignment: Alignment.center,
-                    child: value < 90
-                        ? Card(
-                            margin: const EdgeInsets.all(32),
-                            elevation: 4,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Container(
-                              padding: const EdgeInsets.all(24),
-                              alignment: Alignment.center,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'x+3=7',
-                                    style: TextStyle(
-                                      fontSize: 32,
-                                      color: Colors.blue[900],
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'ما هي قيمة x ؟',
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      color: Colors.blue[900],
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
+                    // Question Numbers
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(_flashcards.length, (index) {
+                          final questionNumber = _flashcards.length - index;
+                          return Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: index == _currentIndex ? Colors.blue : Colors.grey,
+                                width: 2,
                               ),
+                              color: index == _currentIndex ? Colors.blue : Colors.transparent,
                             ),
-                          )
-                        : Transform(
-                            transform: Matrix4.identity()..rotateY(3.1415927),
-                            alignment: Alignment.center,
-                            child: Card(
-                              margin: const EdgeInsets.all(32),
-                              elevation: 4,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Container(
-                                padding: const EdgeInsets.all(24),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  '4',
-                                  style: TextStyle(
-                                    fontSize: 48,
-                                    color: Colors.blue[900],
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                            child: Center(
+                              child: Text(
+                                '$questionNumber',
+                                style: TextStyle(
+                                  color: index == _currentIndex ? Colors.white : Colors.grey,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-                          ),
-                  );
-                },
-              ),
-            ),
-          ),
+                          );
+                        }),
+                      ),
+                    ),
 
-          // Next Button
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextButton.icon(
-              onPressed: () {
-                // Handle next question
-              },
-              icon: const Icon(Icons.arrow_back, color: Colors.blue),
-              label: const Text(
-                'التالي',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold,
+                    // Flash Card
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isFlipped = !_isFlipped;
+                          });
+                        },
+                        child: TweenAnimationBuilder(
+                          tween: Tween<double>(
+                            begin: 0,
+                            end: _isFlipped ? 180 : 0,
+                          ),
+                          duration: const Duration(milliseconds: 300),
+                          builder: (context, double value, child) {
+                            return Transform(
+                              transform: Matrix4.identity()
+                                ..setEntry(3, 2, 0.001)
+                                ..rotateY(value * 3.1415927 / 180),
+                              alignment: Alignment.center,
+                              child: value < 90
+                                  ? Card(
+                                      margin: const EdgeInsets.all(32),
+                                      elevation: 4,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(24),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          _flashcards[_currentIndex]['question']!,
+                                          style: TextStyle(
+                                            fontSize: 24,
+                                            color: Colors.blue[900],
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    )
+                                  : Transform(
+                                      transform: Matrix4.identity()..rotateY(3.1415927),
+                                      alignment: Alignment.center,
+                                      child: Card(
+                                        margin: const EdgeInsets.all(32),
+                                        elevation: 4,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(16),
+                                        ),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(24),
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            _flashcards[_currentIndex]['answer']!,
+                                            style: TextStyle(
+                                              fontSize: 24,
+                                              color: Colors.blue[900],
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+
+                    // Navigation Buttons
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          if (_currentIndex > 0)
+                            TextButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  _currentIndex--;
+                                  _isFlipped = false;
+                                });
+                              },
+                              icon: const Icon(Icons.arrow_forward, color: Colors.blue),
+                              label: const Text(
+                                'السابق',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            )
+                          else
+                            const SizedBox.shrink(),
+                          if (_currentIndex < _flashcards.length - 1)
+                            TextButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  _currentIndex++;
+                                  _isFlipped = false;
+                                });
+                              },
+                              icon: const Icon(Icons.arrow_back, color: Colors.blue),
+                              label: const Text(
+                                'التالي',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            )
+                          else
+                            const SizedBox.shrink(),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -6,6 +6,29 @@ import 'dart:convert';
 class ApiService {
   static const String baseUrl = 'http://localhost:3000';
 
+  static Future<List<Map<String, String>>> getFlashcards() async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/flashcards'),
+      );
+
+      print('Raw flashcards response: ${response.body}');
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        final List<dynamic> flashcardsList = jsonResponse['flashcards'] as List<dynamic>;
+        return flashcardsList.map((item) => {
+          'question': item['question'] as String,
+          'answer': item['answer'] as String,
+        }).toList();
+      } else {
+        throw Exception('Failed to get flashcards: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error getting flashcards: $e');
+      throw Exception('Failed to get flashcards');
+    }
+  }
+
   static Future<List<String>> getSummary() async {
     try {
       final response = await http.post(
