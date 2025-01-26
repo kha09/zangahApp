@@ -148,7 +148,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: List.generate(_flashcards.length, (index) {
-                          final questionNumber = _flashcards.length - index;
+                          final questionNumber = index + 1;
                           return Container(
                             margin: const EdgeInsets.symmetric(horizontal: 4),
                             width: 28,
