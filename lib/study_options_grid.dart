@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'mcq_screen.dart';
 import 'flash_card_screen.dart';
+import 'summary_screen.dart';
+import 'models/summary_model.dart';
 
 class StudyOptionCard extends StatelessWidget {
   final String arabicText;
@@ -96,14 +98,14 @@ class StudyOptionsGrid extends StatelessWidget {
           StudyOptionCard(
             arabicText: 'بطاقات تذكر',
             englishText: 'Flash Cards',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const FlashCardScreen(),
-                  ),
-                );
-              },
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const FlashCardScreen(),
+                ),
+              );
+            },
           ),
           StudyOptionCard(
             arabicText: 'اختيار من متعدد',

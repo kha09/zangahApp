@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'study_plan_timeline.dart';
 import 'study_options_screen.dart';
+import 'summary_screen.dart';
+import 'models/summary_model.dart';
 
 class SubjectDetailsWidget extends StatelessWidget {
   final String subject;
@@ -48,7 +50,28 @@ class SubjectDetailsWidget extends StatelessWidget {
                 context,
                 'الملخص',
                 onTap: () {
-                  // Handle summary tap
+                  // Example summary cards - replace with actual data
+                  final summaryCards = [
+                    SummaryCard(
+                      title: 'مقدمة',
+                      content: 'هذا النص هو مثال لنص يمكن أن يستبدل في نفس المساحة، لقد تم توليد هذا النص من مولد النص العربى.',
+                    ),
+                    SummaryCard(
+                      title: 'الفصل الأول',
+                      content: 'هذا النص هو مثال لنص يمكن أن يستبدل في نفس المساحة، لقد تم توليد هذا النص من مولد النص العربى، حيث يمكنك أن تولد مثل هذا النص أو العديد من النصوص الأخرى إضافة إلى زيادة عدد الحروف التى يولدها التطبيق.',
+                    ),
+                    SummaryCard(
+                      title: 'الخاتمة',
+                      content: 'هذا النص هو مثال لنص يمكن أن يستبدل في نفس المساحة، لقد تم توليد هذا النص من مولد النص العربى، حيث يمكنك أن تولد مثل هذا النص أو العديد من النصوص الأخرى.',
+                    ),
+                  ];
+                  
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SummaryScreen(summaryCards: summaryCards),
+                    ),
+                  );
                 },
               ),
               _buildOptionCard(
