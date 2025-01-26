@@ -3,6 +3,7 @@ import 'study_plan_timeline.dart';
 import 'study_options_screen.dart';
 import 'summary_screen.dart';
 import 'models/summary_model.dart';
+import 'services/api_service.dart';
 
 class SubjectDetailsWidget extends StatelessWidget {
   final String subject;
@@ -49,29 +50,53 @@ class SubjectDetailsWidget extends StatelessWidget {
               _buildOptionCard(
                 context,
                 'الملخص',
-                onTap: () {
-                  // Example summary cards - replace with actual data
-                  final summaryCards = [
-                    SummaryCard(
-                      title: 'مقدمة',
-                      content: 'هذا النص هو مثال لنص يمكن أن يستبدل في نفس المساحة، لقد تم توليد هذا النص من مولد النص العربى.',
-                    ),
-                    SummaryCard(
-                      title: 'الفصل الأول',
-                      content: 'هذا النص هو مثال لنص يمكن أن يستبدل في نفس المساحة، لقد تم توليد هذا النص من مولد النص العربى، حيث يمكنك أن تولد مثل هذا النص أو العديد من النصوص الأخرى إضافة إلى زيادة عدد الحروف التى يولدها التطبيق.',
-                    ),
-                    SummaryCard(
-                      title: 'الخاتمة',
-                      content: 'هذا النص هو مثال لنص يمكن أن يستبدل في نفس المساحة، لقد تم توليد هذا النص من مولد النص العربى، حيث يمكنك أن تولد مثل هذا النص أو العديد من النصوص الأخرى.',
-                    ),
-                  ];
-                  
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SummaryScreen(summaryCards: summaryCards),
-                    ),
-                  );
+                onTap: () async {
+                  try {
+                    // Show loading dialog
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      },
+                    );
+
+                    // Get summary from API
+                    final summaryTexts = await ApiService.getSummary();
+                    
+                    // Create summary cards from the response
+                    final summaryCards = summaryTexts.asMap().entries.map((entry) {
+                      final index = entry.key + 1;
+                      return SummaryCard(
+                        title: 'نقطة $index',
+                        content: entry.value,
+                      );
+                    }).toList();
+
+                    // Pop loading dialog
+                    Navigator.pop(context);
+
+                    // Navigate to summary screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SummaryScreen(summaryCards: summaryCards),
+                      ),
+                    );
+                  } catch (e) {
+                    // Pop loading dialog if showing
+                    Navigator.pop(context);
+                    
+                    // Show error message
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('حدث خطأ: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 },
               ),
               _buildOptionCard(

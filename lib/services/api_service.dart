@@ -1,9 +1,31 @@
 import 'package:http/http.dart' as http;
 import 'dart:html' as html;
 import 'dart:async';
+import 'dart:convert';
 
 class ApiService {
   static const String baseUrl = 'http://localhost:3000';
+
+  static Future<List<String>> getSummary() async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/summarize'),
+      );
+
+      print('Raw summary response: ${response.body}');
+      if (response.statusCode == 200) {
+        // Parse the response body and get the summary array
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        final List<dynamic> summaryList = jsonResponse['summary'] as List<dynamic>;
+        return summaryList.map((item) => item.toString()).toList();
+      } else {
+        throw Exception('Failed to get summary: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error getting summary: $e');
+      throw Exception('Failed to get summary');
+    }
+  }
 
   static Future<Map<String, dynamic>> uploadFile(html.File file) async {
     try {
