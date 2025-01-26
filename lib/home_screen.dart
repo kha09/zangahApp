@@ -246,6 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
           
           if (result != null) {
+            // Add subject to list
             setState(() {
               subjects.add({
                 'subject': result['subject'],
@@ -255,6 +256,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 'hasSummary': result['hasSummary'],
               });
             });
+
+            // Show upload status message if a file was uploaded
+            if (result['fileName'].isNotEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    result['uploadSuccess'] == true
+                        ? 'تم رفع الملف بنجاح'
+                        : result['uploadMessage'] ?? 'فشل رفع الملف',
+                    textAlign: TextAlign.right,
+                  ),
+                  backgroundColor: result['uploadSuccess'] == true
+                      ? Colors.green
+                      : Colors.red,
+                ),
+              );
+            }
           }
         },
         backgroundColor: const Color(0xFF4666F6),

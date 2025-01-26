@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' if (dart.library.io) 'stub.dart' as universal;
+import 'dart:html' as html;
+import 'services/api_service.dart';
 
 class UploadDialog extends StatefulWidget {
   const UploadDialog({super.key});
@@ -16,26 +16,80 @@ class _UploadDialogState extends State<UploadDialog> {
   bool isQuestionsChecked = false;
   bool isSummaryChecked = false;
   String? selectedFileName;
+  html.File? selectedFile;
+  bool isUploading = false;
 
-  void _pickFile() {
+  Future<void> _pickFile() async {
     if (kIsWeb) {
       try {
-        final input = universal.FileUploadInputElement()
-          ..style.display = 'none'
-          ..multiple = false;
-        
-        input.onChange.listen((event) {
-          if (input.files?.isNotEmpty == true) {
-            setState(() {
-              selectedFileName = input.files![0].name;
-            });
-          }
-        });
+        final input = html.FileUploadInputElement()
+          ..accept = '.pdf,.doc,.docx'
+          ..click();
 
-        input.click();
+        await input.onChange.first;
+        if (input.files?.isNotEmpty == true) {
+          setState(() {
+            selectedFile = input.files![0];
+            selectedFileName = selectedFile!.name;
+          });
+        }
       } catch (e) {
         print('Error picking file: $e');
       }
+    }
+  }
+
+  Future<void> _uploadFileAndCreateSubject() async {
+    if (_subjectController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('الرجاء إدخال اسم المادة'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      isUploading = true;
+    });
+
+    try {
+      Map<String, dynamic> uploadResult = {'success': true};
+      
+      if (selectedFile != null) {
+        print('Starting file upload...');
+        uploadResult = await ApiService.uploadFile(selectedFile!);
+        print('Upload completed with result: $uploadResult');
+      }
+
+      if (!mounted) return;
+
+      // Create subject even if file upload fails
+      Navigator.of(context).pop({
+        'subject': _subjectController.text,
+        'hasSchedule': isScheduleChecked,
+        'hasQuestions': isQuestionsChecked,
+        'hasSummary': isSummaryChecked,
+        'fileName': selectedFileName ?? '',
+        'uploadSuccess': uploadResult['success'],
+        'uploadMessage': uploadResult['message'],
+      });
+      
+    } catch (e) {
+      print('Error in _uploadFileAndCreateSubject: $e');
+      if (!mounted) return;
+      
+      // Create subject even if there's an error
+      Navigator.of(context).pop({
+        'subject': _subjectController.text,
+        'hasSchedule': isScheduleChecked,
+        'hasQuestions': isQuestionsChecked,
+        'hasSummary': isSummaryChecked,
+        'fileName': selectedFileName ?? '',
+        'uploadSuccess': false,
+        'uploadMessage': 'Error: $e',
+      });
     }
   }
 
@@ -128,7 +182,7 @@ class _UploadDialogState extends State<UploadDialog> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: TextButton(
-                onPressed: _pickFile,
+                onPressed: isUploading ? null : _pickFile,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -148,17 +202,7 @@ class _UploadDialogState extends State<UploadDialog> {
             // Create Content Button
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {
-                if (_subjectController.text.isNotEmpty) {
-                  Navigator.of(context).pop({
-                    'subject': _subjectController.text,
-                    'hasSchedule': isScheduleChecked,
-                    'hasQuestions': isQuestionsChecked,
-                    'hasSummary': isSummaryChecked,
-                    'fileName': selectedFileName ?? '',
-                  });
-                }
-              },
+              onPressed: isUploading ? null : _uploadFileAndCreateSubject,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.purple[700],
                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -169,11 +213,21 @@ class _UploadDialogState extends State<UploadDialog> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.check, color: Colors.white),
+                  if (isUploading)
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  else
+                    const Icon(Icons.check, color: Colors.white),
                   const SizedBox(width: 8),
-                  const Text(
-                    'انشاء المحتوى',
-                    style: TextStyle(
+                  Text(
+                    isUploading ? 'جاري الرفع...' : 'انشاء المحتوى',
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
