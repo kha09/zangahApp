@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'upload_dialog.dart';
 import 'subject_card.dart';
 import 'subject_details_widget.dart';
+import 'calendar_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -198,41 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   },
                                 ),
                               )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset(
-                            'assets/images/path_group.png',
-                            width: 200,
-                            height: 200,
-                            fit: BoxFit.contain,
-                          ),
-                          const SizedBox(height: 32),
-                          const Text(
-                            "!أهلاً بالمزنوق",
-                            style: TextStyle(
-                              fontSize: 24,
-                              color: Color(0xFF4A1E9E),
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textDirection: TextDirection.rtl,
-                          ),
-                          const SizedBox(height: 16),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 32),
-                            child: Text(
-                              "عشان تبدأ بالمذاكرة نحتاج منك ترفع لنا المنهج عن طريق الزر إلي بالأسفل",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Color(0xFF4A1E9E),
-                                height: 1.5,
-                              ),
-                              textDirection: TextDirection.rtl,
-                            ),
-                          ),
-                        ],
-                      ),
+                    : const CalendarScreen(),
               ],
             ),
           ),
