@@ -16,6 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? selectedSubject;
   String? selectedSemester;
   List<Map<String, dynamic>> subjects = [];
+  final _calendarKey = GlobalKey<CalendarScreenState>();
 
   @override
   Widget build(BuildContext context) {
@@ -199,52 +200,63 @@ class _HomeScreenState extends State<HomeScreen> {
                                   },
                                 ),
                               )
-                    : const CalendarScreen(),
+                    : CalendarScreen(key: _calendarKey),
               ],
             ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final result = await showDialog<Map<String, dynamic>>(
-            context: context,
-            builder: (context) => const UploadDialog(),
-          );
-          
-          if (result != null) {
-            // Add subject to list
-            setState(() {
-              subjects.add({
-                'subject': result['subject'],
-                'fileName': result['fileName'],
-                'hasSchedule': result['hasSchedule'],
-                'hasQuestions': result['hasQuestions'],
-                'hasSummary': result['hasSummary'],
-              });
-            });
+      floatingActionButton: selectedTab == 0
+          ? FloatingActionButton(
+              onPressed: () async {
+                final result = await showDialog<Map<String, dynamic>>(
+                  context: context,
+                  builder: (context) => const UploadDialog(),
+                );
+                
+                if (result != null) {
+                  // Add subject to list
+                  setState(() {
+                    subjects.add({
+                      'subject': result['subject'],
+                      'fileName': result['fileName'],
+                      'hasSchedule': result['hasSchedule'],
+                      'hasQuestions': result['hasQuestions'],
+                      'hasSummary': result['hasSummary'],
+                    });
+                  });
 
-            // Show upload status message if a file was uploaded
-            if (result['fileName'].isNotEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    result['uploadSuccess'] == true
-                        ? 'تم رفع الملف بنجاح'
-                        : result['uploadMessage'] ?? 'فشل رفع الملف',
-                    textAlign: TextAlign.right,
-                  ),
-                  backgroundColor: result['uploadSuccess'] == true
-                      ? Colors.green
-                      : Colors.red,
-                ),
-              );
-            }
-          }
-        },
-        backgroundColor: const Color(0xFF4666F6),
-        child: const Icon(Icons.add, size: 32),
-      ),
+                  // Show upload status message if a file was uploaded
+                  if (result['fileName'].isNotEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          result['uploadSuccess'] == true
+                              ? 'تم رفع الملف بنجاح'
+                              : result['uploadMessage'] ?? 'فشل رفع الملف',
+                          textAlign: TextAlign.right,
+                        ),
+                        backgroundColor: result['uploadSuccess'] == true
+                            ? Colors.green
+                            : Colors.red,
+                      ),
+                    );
+                  }
+                }
+              },
+              backgroundColor: const Color(0xFF4666F6),
+              child: const Icon(Icons.add, size: 32),
+            )
+          : FloatingActionButton(
+              onPressed: () {
+                final calendarState = _calendarKey.currentState;
+                if (calendarState != null) {
+                  calendarState.addEvent(calendarState.selectedDate ?? DateTime.now());
+                }
+              },
+              backgroundColor: Colors.blue,
+              child: const Icon(Icons.add),
+            ),
     );
   }
 }
