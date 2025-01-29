@@ -2,9 +2,30 @@ import 'package:http/http.dart' as http;
 import 'dart:html' as html;
 import 'dart:async';
 import 'dart:convert';
+import '../models/mcq_model.dart';
 
 class ApiService {
   static const String baseUrl = 'http://localhost:3000';
+
+  static Future<List<MCQ>> getMCQs() async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/mcq'),
+      );
+
+      print('Raw MCQ response: ${response.body}');
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        final List<dynamic> mcqsList = jsonResponse['mcqs'] as List<dynamic>;
+        return mcqsList.map((item) => MCQ.fromJson(item)).toList();
+      } else {
+        throw Exception('Failed to get MCQs: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error getting MCQs: $e');
+      throw Exception('Failed to get MCQs');
+    }
+  }
 
   static Future<List<Map<String, String>>> getFlashcards() async {
     try {

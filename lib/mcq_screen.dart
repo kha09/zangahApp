@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'services/api_service.dart';
+import 'models/mcq_model.dart';
 
 class MCQScreen extends StatefulWidget {
   const MCQScreen({super.key});
@@ -8,203 +10,318 @@ class MCQScreen extends StatefulWidget {
 }
 
 class _MCQScreenState extends State<MCQScreen> {
-  int? _selectedAnswer;
-  final int _currentIndex = 6; // 7th question (0-based index)
+  int _currentIndex = 0;
+  List<MCQ> _mcqs = [];
+  bool _isLoading = true;
+  String? _selectedAnswer;
+  bool _hasSubmitted = false;
 
-  final List<String> _answers = ['x = 6', 'x = -2', 'x = -4', 'x = 4'];
-  final Map<int, Color> _questionStatus = {
-    0: Colors.red,
-    1: Colors.green,
-    2: Colors.green,
-    3: Colors.green,
-    4: Colors.green,
-    5: Colors.red,
-    6: Colors.blue,
-  };
+  @override
+  void initState() {
+    super.initState();
+    _loadMCQs();
+  }
+
+  Future<void> _loadMCQs() async {
+    try {
+      final mcqs = await ApiService.getMCQs();
+      setState(() {
+        _mcqs = mcqs;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('فشل تحميل الأسئلة: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _checkAnswer(String answer) {
+    setState(() {
+      _selectedAnswer = answer;
+      _hasSubmitted = true;
+    });
+  }
+
+  void _nextQuestion() {
+    if (_currentIndex < _mcqs.length - 1) {
+      setState(() {
+        _currentIndex++;
+        _selectedAnswer = null;
+        _hasSubmitted = false;
+      });
+    }
+  }
+
+  void _previousQuestion() {
+    if (_currentIndex > 0) {
+      setState(() {
+        _currentIndex--;
+        _selectedAnswer = null;
+        _hasSubmitted = false;
+      });
+    }
+  }
+
+  Color _getOptionColor(String option) {
+    if (!_hasSubmitted) return Colors.white;
+    
+    if (option == _mcqs[_currentIndex].correctAnswer) {
+      return Colors.green[100]!;
+    }
+    if (option == _selectedAnswer && option != _mcqs[_currentIndex].correctAnswer) {
+      return Colors.red[100]!;
+    }
+    return Colors.white;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF4A1E9E)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Row(
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFF4A1E9E),
+                  width: 2,
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.grey),
-                    onPressed: () => Navigator.pop(context),
+                  Container(
+                    width: 20,
+                    height: 2,
+                    color: const Color(0xFF4666F6),
+                    margin: const EdgeInsets.symmetric(vertical: 2),
                   ),
-                  Row(
-                    children: [
-                      const Text(
-                        'زلفة',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.purple,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Icon(Icons.note_alt_outlined, color: Colors.purple[700]),
-                    ],
+                  Container(
+                    width: 15,
+                    height: 2,
+                    color: const Color(0xFF223CC7),
+                    margin: const EdgeInsets.symmetric(vertical: 2),
+                  ),
+                  Container(
+                    width: 18,
+                    height: 2,
+                    color: const Color(0xFF34C759),
+                    margin: const EdgeInsets.symmetric(vertical: 2),
                   ),
                 ],
               ),
             ),
-
-            // Subtitle
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'اسئلة : رياضيات - الفصل الأول',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue[400],
-                ),
-                textAlign: TextAlign.right,
-              ),
-            ),
-
-            // Question Numbers
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: List.generate(11, (index) {
-                  final questionNumber = 11 - index;
-                  final status = _questionStatus[10 - index];
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: status ?? Colors.grey,
-                        width: 2,
-                      ),
-                      color: status ?? Colors.transparent,
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$questionNumber',
-                        style: TextStyle(
-                          color: status != null ? Colors.white : Colors.grey,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ),
-
-            // Question Card
-            Card(
-              margin: const EdgeInsets.all(16),
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'x+3=7',
-                      style: TextStyle(
-                        fontSize: 32,
-                        color: Colors.blue[900],
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'ما هي قيمة x ؟',
-                      style: TextStyle(
-                        fontSize: 24,
-                        color: Colors.blue[900],
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Answer Options
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 2,
-                padding: const EdgeInsets.all(16),
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 2,
-                children: List.generate(
-                  _answers.length,
-                  (index) => GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedAnswer = index;
-                      });
-                    },
-                    child: Card(
-                      elevation: _selectedAnswer == index ? 8 : 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(
-                          color: _selectedAnswer == index
-                              ? Colors.blue
-                              : Colors.transparent,
-                          width: 2,
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          _answers[index],
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: Colors.blue[900],
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            // Next Button
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextButton.icon(
-                onPressed: () {
-                  // Handle next question
-                },
-                icon: const Icon(Icons.arrow_back, color: Colors.blue),
-                label: const Text(
-                  'التالي',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+            const SizedBox(width: 8),
+            const Text(
+              "زنقه",
+              style: TextStyle(
+                fontSize: 24,
+                color: Color(0xFF4A1E9E),
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
         ),
       ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _mcqs.isEmpty
+              ? Center(
+                  child: Text(
+                    'لا توجد أسئلة متاحة',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                )
+              : Column(
+                  children: [
+                    const SizedBox(height: 16),
+
+                    // Question Numbers
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(_mcqs.length, (index) {
+                          final questionNumber = index + 1;
+                          return Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: index == _currentIndex ? Colors.blue : Colors.grey,
+                                width: 2,
+                              ),
+                              color: index == _currentIndex ? Colors.blue : Colors.transparent,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '$questionNumber',
+                                style: TextStyle(
+                                  color: index == _currentIndex ? Colors.white : Colors.grey,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+
+                    // Question Card
+                    Expanded(
+                      child: Card(
+                        margin: const EdgeInsets.all(16),
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            children: [
+                              // Question
+                              Text(
+                                _mcqs[_currentIndex].question,
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.blue[900],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 24),
+                              // Options
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: _mcqs[_currentIndex].options.length,
+                                  itemBuilder: (context, index) {
+                                    final option = _mcqs[_currentIndex].options.keys.elementAt(index);
+                                    final optionText = _mcqs[_currentIndex].options[option]!;
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      child: InkWell(
+                                        onTap: _hasSubmitted ? null : () => _checkAnswer(option),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: _getOptionColor(option),
+                                            border: Border.all(
+                                              color: option == _selectedAnswer ? Colors.blue : Colors.grey[300]!,
+                                              width: 2,
+                                            ),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                width: 30,
+                                                height: 30,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(
+                                                    color: option == _selectedAnswer ? Colors.blue : Colors.grey[400]!,
+                                                  ),
+                                                ),
+                                                child: Center(
+                                                  child: Text(
+                                                    option,
+                                                    style: TextStyle(
+                                                      color: option == _selectedAnswer ? Colors.blue : Colors.grey[600],
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 16),
+                                              Expanded(
+                                                child: Text(
+                                                  optionText,
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: Colors.blue[900],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Navigation Buttons
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          if (_currentIndex > 0)
+                            TextButton.icon(
+                              onPressed: _previousQuestion,
+                              icon: const Icon(Icons.arrow_forward, color: Colors.blue),
+                              label: const Text(
+                                'السابق',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            )
+                          else
+                            const SizedBox.shrink(),
+                          if (_currentIndex < _mcqs.length - 1)
+                            TextButton.icon(
+                              onPressed: _hasSubmitted ? _nextQuestion : null,
+                              icon: const Icon(Icons.arrow_back, color: Colors.blue),
+                              label: const Text(
+                                'التالي',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            )
+                          else
+                            const SizedBox.shrink(),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
     );
   }
 }
