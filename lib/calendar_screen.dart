@@ -246,6 +246,14 @@ class CalendarScreenState extends State<CalendarScreen> {
     });
   }
 
+  List<Event> _getAllEvents() {
+    final allEvents = <Event>[];
+    events.forEach((date, eventList) {
+      allEvents.addAll(eventList);
+    });
+    return allEvents;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -369,15 +377,34 @@ class CalendarScreenState extends State<CalendarScreen> {
   }
 
   Widget _buildLegend() {
+    final allEvents = _getAllEvents();
+    if (allEvents.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        child: const Text(
+          'لا توجد أحداث',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey,
+          ),
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildLegendItem('جدول استذكاري - مادة 1', Colors.blue),
-          _buildLegendItem('جدول استذكاري - مادة 2', Colors.lightBlue),
-          _buildLegendItem('جدول استذكاري - مادة 3', Colors.red),
-          _buildLegendItem('إجازات رسمية', Colors.green),
-          _buildLegendItem('حدث مخصص', Colors.purple),
+          const Text(
+            'الأحداث:',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ...allEvents.map((event) => _buildLegendItem(event.name, event.color)),
         ],
       ),
     );
