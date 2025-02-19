@@ -23,13 +23,24 @@ class StudyOptionsScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.cyan),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          '$subject - $semester',
-          style: const TextStyle(
-            color: Colors.cyan,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/images/mainpic.png',
+              width: 40,
+              height: 40,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '$subject - $semester',
+              style: const TextStyle(
+                color: Colors.cyan,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
       body: const SafeArea(

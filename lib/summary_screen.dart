@@ -29,39 +29,11 @@ class _SummaryScreenState extends State<SummaryScreen> {
         ),
         title: Row(
           children: [
-            Container(
+            Image.asset(
+              'assets/images/mainpic.png',
               width: 40,
               height: 40,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: const Color(0xFF4A1E9E),
-                  width: 2,
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 20,
-                    height: 2,
-                    color: const Color(0xFF4666F6),
-                    margin: const EdgeInsets.symmetric(vertical: 2),
-                  ),
-                  Container(
-                    width: 15,
-                    height: 2,
-                    color: const Color(0xFF223CC7),
-                    margin: const EdgeInsets.symmetric(vertical: 2),
-                  ),
-                  Container(
-                    width: 18,
-                    height: 2,
-                    color: const Color(0xFF34C759),
-                    margin: const EdgeInsets.symmetric(vertical: 2),
-                  ),
-                ],
-              ),
+              fit: BoxFit.contain,
             ),
             const SizedBox(width: 8),
             const Text(
@@ -115,16 +87,16 @@ class _SummaryScreenState extends State<SummaryScreen> {
                   final cardNumber = index + 1;
                   return Container(
                     margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: index == _currentIndex ? Colors.blue : Colors.grey,
-                      width: 2,
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: index == _currentIndex ? Colors.blue : Colors.grey,
+                        width: 2,
+                      ),
+                      color: index == _currentIndex ? Colors.blue : Colors.transparent,
                     ),
-                    color: index == _currentIndex ? Colors.blue : Colors.transparent,
-                  ),
                     child: Center(
                       child: Text(
                         '$cardNumber',

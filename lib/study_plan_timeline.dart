@@ -157,15 +157,8 @@ class StudyPlanTimeline extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            if (!item.isCompleted)
-                              TextButton.icon(
-                                onPressed: () {},
-                                icon: const Icon(Icons.arrow_back),
-                                label: const Text('بدء'),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.blue[800],
-                                ),
-                              ),
+                            
+                              
                           ],
                         ),
                       ),

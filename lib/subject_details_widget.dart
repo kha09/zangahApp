@@ -62,6 +62,13 @@ class _SubjectDetailsWidgetState extends State<SubjectDetailsWidget> {
                 icon: const Icon(Icons.arrow_back, color: Colors.cyan),
                 onPressed: widget.onBack,
               ),
+              Image.asset(
+                'assets/images/mainpic.png',
+                width: 40,
+                height: 40,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(width: 8),
               Text(
                 '${widget.subject} - ${widget.semester}',
                 style: const TextStyle(
