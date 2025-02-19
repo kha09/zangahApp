@@ -107,12 +107,14 @@ class _SummaryScreenState extends State<SummaryScreen> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(widget.summaryCards.length, (index) {
-                final cardNumber = widget.summaryCards.length - index;
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
+            child: Directionality(
+              textDirection: TextDirection.rtl,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(widget.summaryCards.length, (index) {
+                  final cardNumber = index + 1;
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
                   width: 28,
                   height: 28,
                   decoration: BoxDecoration(
@@ -123,17 +125,18 @@ class _SummaryScreenState extends State<SummaryScreen> {
                     ),
                     color: index == _currentIndex ? Colors.blue : Colors.transparent,
                   ),
-                  child: Center(
-                    child: Text(
-                      '$cardNumber',
-                      style: TextStyle(
-                        color: index == _currentIndex ? Colors.white : Colors.grey,
-                        fontWeight: FontWeight.bold,
+                    child: Center(
+                      child: Text(
+                        '$cardNumber',
+                        style: TextStyle(
+                          color: index == _currentIndex ? Colors.white : Colors.grey,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                );
-              }),
+                  );
+                }),
+              ),
             ),
           ),
 
