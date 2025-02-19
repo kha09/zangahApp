@@ -322,41 +322,73 @@ class CalendarScreenState extends State<CalendarScreen> {
     events.forEach((date, eventList) {
       allEvents.addAll(eventList);
     });
+    // Sort events by date
+    allEvents.sort((a, b) => a.date.compareTo(b.date));
     return allEvents;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Month navigation
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Column(
           children: [
-            IconButton(
-              icon: const Icon(Icons.chevron_right),
-              onPressed: _previousMonth,
+            // Calendar section (70% of height)
+            SizedBox(
+              height: constraints.maxHeight * 0.7,
+              child: Column(
+                children: [
+                  // Month navigation
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.chevron_right),
+                          onPressed: _previousMonth,
+                        ),
+                        Text(
+                          DateFormat('MMMM yyyy').format(_focusedDate),
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.chevron_left),
+                          onPressed: _nextMonth,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.refresh),
+                          onPressed: loadSchedule,
+                        ),
+                      ],
+                    ),
+                  ),
+                  _buildCalendarHeader(),
+                  Expanded(
+                    child: _buildCalendarGrid(),
+                  ),
+                ],
+              ),
             ),
-            Text(
-              DateFormat('MMMM yyyy').format(_focusedDate),
-              style: const TextStyle(fontSize: 18),
-            ),
-            IconButton(
-              icon: const Icon(Icons.chevron_left),
-              onPressed: _nextMonth,
-            ),
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: loadSchedule,
+            // Events section (30% of height)
+            Container(
+              height: constraints.maxHeight * 0.3,
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.grey[300]!,
+                    width: 1,
+                  ),
+                ),
+              ),
+              child: SingleChildScrollView(
+                child: _buildLegend(),
+              ),
             ),
           ],
-        ),
-        _buildCalendarHeader(),
-        Expanded(
-          child: _buildCalendarGrid(),
-        ),
-        _buildLegend(),
-      ],
+        );
+      },
     );
   }
 
@@ -391,6 +423,7 @@ class CalendarScreenState extends State<CalendarScreen> {
     final firstWeekday = firstDayOfMonth.weekday % 7;
 
     return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 7,
         childAspectRatio: 1,
@@ -419,29 +452,31 @@ class CalendarScreenState extends State<CalendarScreen> {
               color: isSelected ? Colors.blue.withOpacity(0.1) : null,
             ),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: Text(
-                    day.toString(),
-                    style: TextStyle(
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
+                Text(
+                  day.toString(),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
                 if (events[date]?.isNotEmpty ?? false)
-                  Wrap(
-                    spacing: 4,
-                    children: events[date]!
-                        .map((event) => Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: event.color,
-                                shape: BoxShape.circle,
-                              ),
-                            ))
-                        .toList(),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Wrap(
+                      spacing: 4,
+                      children: events[date]!
+                          .map((event) => Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: event.color,
+                                  shape: BoxShape.circle,
+                                ),
+                              ))
+                          .toList(),
+                    ),
                   ),
               ],
             ),
@@ -466,10 +501,11 @@ class CalendarScreenState extends State<CalendarScreen> {
       );
     }
 
-    return Container(
+    return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
             'الأحداث:',
@@ -479,13 +515,13 @@ class CalendarScreenState extends State<CalendarScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          ...allEvents.map((event) => _buildLegendItem(event.name, event.color)),
+          ...allEvents.map((event) => _buildLegendItem(event)),
         ],
       ),
     );
   }
 
-  Widget _buildLegendItem(String text, Color color) {
+  Widget _buildLegendItem(Event event) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -494,12 +530,29 @@ class CalendarScreenState extends State<CalendarScreen> {
             width: 12,
             height: 12,
             decoration: BoxDecoration(
-              color: color,
+              color: event.color,
               shape: BoxShape.circle,
             ),
           ),
           const SizedBox(width: 8),
-          Text(text),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  event.name,
+                  style: const TextStyle(fontSize: 14),
+                ),
+                Text(
+                  DateFormat('yyyy/MM/dd').format(event.date),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
