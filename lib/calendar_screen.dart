@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'models/schedule_model.dart';
+import 'services/schedule_service.dart';
 
 // Event Model
 class Event {
@@ -7,8 +9,31 @@ class Event {
   final Color color;
   final String description;
   final DateTime date;
+  final bool isScheduleEvent;
+  final int? startPage;
+  final int? endPage;
 
-  Event(this.name, this.color, this.description, this.date);
+  Event(
+    this.name,
+    this.color,
+    this.description,
+    this.date, {
+    this.isScheduleEvent = false,
+    this.startPage,
+    this.endPage,
+  });
+
+  factory Event.fromScheduleDay(ScheduleDay day) {
+    return Event(
+      'المراجعة اليومية',
+      Colors.purple,
+      'الصفحات ${day.pages.start} إلى ${day.pages.end}',
+      day.date,
+      isScheduleEvent: true,
+      startPage: day.pages.start,
+      endPage: day.pages.end,
+    );
+  }
 }
 
 // Event Creation Dialog
@@ -187,7 +212,12 @@ class EventDetailsDialog extends StatelessWidget {
 }
 
 class CalendarScreen extends StatefulWidget {
-  const CalendarScreen({Key? key}) : super(key: key);
+  final VoidCallback? onTabSelected;
+  
+  const CalendarScreen({
+    Key? key,
+    this.onTabSelected,
+  }) : super(key: key);
 
   @override
   CalendarScreenState createState() => CalendarScreenState();
@@ -197,6 +227,47 @@ class CalendarScreenState extends State<CalendarScreen> {
   DateTime _focusedDate = DateTime.now();
   DateTime? _selectedDate;
   Map<DateTime, List<Event>> events = {};
+  final ScheduleService _scheduleService = ScheduleService();
+
+  @override
+  void initState() {
+    super.initState();
+    loadSchedule();
+  }
+
+  Future<void> loadSchedule() async {
+    try {
+      print('Starting schedule load...'); // Debug print
+      
+      // Clear existing schedule events
+      setState(() {
+        events.clear();
+      });
+      
+      final schedule = await _scheduleService.getSchedule();
+      print('Schedule received, days: ${schedule.schedule.length}'); // Debug print
+      
+      setState(() {
+        for (var day in schedule.schedule) {
+          final date = DateTime(day.date.year, day.date.month, day.date.day);
+          print('Processing day: ${date.toString()}, pages: ${day.pages.start}-${day.pages.end}'); // Debug print
+          
+          if (events[date] == null) {
+            events[date] = [];
+          }
+          events[date]!.add(Event.fromScheduleDay(day));
+        }
+        print('Total events after update: ${_getAllEvents().length}'); // Debug print
+      });
+    } catch (e) {
+      print('Error loading schedule: $e'); // Debug print
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('خطأ في تحميل الجدول: $e')),
+        );
+      }
+    }
+  }
 
   DateTime? get selectedDate => _selectedDate;
 
@@ -273,6 +344,10 @@ class CalendarScreenState extends State<CalendarScreen> {
             IconButton(
               icon: const Icon(Icons.chevron_left),
               onPressed: _nextMonth,
+            ),
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: loadSchedule,
             ),
           ],
         ),

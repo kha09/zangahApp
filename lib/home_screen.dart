@@ -124,7 +124,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   Expanded(
                     child: GestureDetector(
-                      onTap: () => setState(() => selectedTab = 1),
+                      onTap: () {
+                        setState(() {
+                          selectedTab = 1;
+                        });
+                        // Refresh calendar when switching to calendar tab
+                        if (_calendarKey.currentState != null) {
+                          print('Refreshing calendar data...'); // Debug print
+                          _calendarKey.currentState!.loadSchedule();
+                        }
+                      },
                       child: Container(
                         decoration: BoxDecoration(
                           color: selectedTab == 1
@@ -200,7 +209,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                   },
                                 ),
                               )
-                    : CalendarScreen(key: _calendarKey),
+                    : CalendarScreen(
+                        key: _calendarKey,
+                        onTabSelected: () {
+                          print('Calendar tab selected, loading schedule...'); // Debug print
+                          _calendarKey.currentState?.loadSchedule();
+                        },
+                      ),
               ],
             ),
           ),
