@@ -1,26 +1,50 @@
 import 'package:flutter/material.dart';
 
+import 'package:intl/intl.dart';
+import 'models/schedule_model.dart';
+
 class StudyPlanItem {
   final String pageRange;
   final String date;
   final bool isCompleted;
   final Color backgroundColor;
+  final int startPage;
+  final int endPage;
 
   StudyPlanItem({
     required this.pageRange,
     required this.date,
     required this.isCompleted,
     required this.backgroundColor,
+    required this.startPage,
+    required this.endPage,
   });
+
+  factory StudyPlanItem.fromScheduleDay(ScheduleDay day) {
+    return StudyPlanItem(
+      pageRange: 'الصفحات ${day.pages.start} إلى ${day.pages.end}',
+      date: DateFormat('MM/dd').format(day.date),
+      isCompleted: false,
+      backgroundColor: Colors.blue[50]!,
+      startPage: day.pages.start,
+      endPage: day.pages.end,
+    );
+  }
 }
 
 class StudyPlanTimeline extends StatelessWidget {
   final List<StudyPlanItem> items;
+  final VoidCallback? onRefresh;
 
   const StudyPlanTimeline({
     super.key,
     required this.items,
+    this.onRefresh,
   });
+
+  static List<StudyPlanItem> fromSchedule(ScheduleResponse schedule) {
+    return schedule.schedule.map((day) => StudyPlanItem.fromScheduleDay(day)).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,22 +55,33 @@ class StudyPlanTimeline extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                width: 4,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: Colors.purple[800],
-                  borderRadius: BorderRadius.circular(2),
-                ),
+              Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: Colors.purple[800],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'الخطة الدراسية',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.purple[800],
+                    ),
+                  ),
+                ],
               ),
-              Text(
-                'الخطة الدراسية',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+              if (onRefresh != null)
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: onRefresh,
                   color: Colors.purple[800],
                 ),
-              ),
             ],
           ),
         ),
@@ -57,7 +92,7 @@ class StudyPlanTimeline extends StatelessWidget {
             itemBuilder: (context, index) {
               final item = items[index];
               return Row(
-                textDirection: TextDirection.rtl,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   // Timeline
                   Column(
@@ -109,7 +144,7 @@ class StudyPlanTimeline extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Row(
-                          textDirection: TextDirection.rtl,
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             const Icon(Icons.description_outlined),
                             const SizedBox(width: 8),
@@ -122,14 +157,15 @@ class StudyPlanTimeline extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            TextButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.arrow_back),
-                              label: const Text('بدء'),
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.blue[800],
+                            if (!item.isCompleted)
+                              TextButton.icon(
+                                onPressed: () {},
+                                icon: const Icon(Icons.arrow_back),
+                                label: const Text('بدء'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.blue[800],
+                                ),
                               ),
-                            ),
                           ],
                         ),
                       ),

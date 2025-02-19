@@ -3,9 +3,11 @@ import 'study_plan_timeline.dart';
 import 'study_options_screen.dart';
 import 'summary_screen.dart';
 import 'models/summary_model.dart';
+import 'models/schedule_model.dart';
 import 'services/api_service.dart';
+import 'services/schedule_service.dart';
 
-class SubjectDetailsWidget extends StatelessWidget {
+class SubjectDetailsWidget extends StatefulWidget {
   final String subject;
   final String semester;
   final VoidCallback onBack;
@@ -18,6 +20,36 @@ class SubjectDetailsWidget extends StatelessWidget {
   });
 
   @override
+  State<SubjectDetailsWidget> createState() => _SubjectDetailsWidgetState();
+}
+
+class _SubjectDetailsWidgetState extends State<SubjectDetailsWidget> {
+  final _scheduleService = ScheduleService();
+  List<StudyPlanItem> _studyPlanItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSchedule();
+  }
+
+  Future<void> _loadSchedule() async {
+    try {
+      final schedule = await _scheduleService.getSchedule();
+      setState(() {
+        _studyPlanItems = StudyPlanTimeline.fromSchedule(schedule);
+      });
+    } catch (e) {
+      print('Error loading schedule: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('خطأ في تحميل الجدول: $e')),
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       children: [
@@ -28,10 +60,10 @@ class SubjectDetailsWidget extends StatelessWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.cyan),
-                onPressed: onBack,
+                onPressed: widget.onBack,
               ),
               Text(
-                '$subject - $semester',
+                '${widget.subject} - ${widget.semester}',
                 style: const TextStyle(
                   color: Colors.cyan,
                   fontSize: 24,
@@ -107,8 +139,8 @@ class SubjectDetailsWidget extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => StudyOptionsScreen(
-                        subject: subject,
-                        semester: semester,
+                        subject: widget.subject,
+                        semester: widget.semester,
                       ),
                     ),
                   );
@@ -120,38 +152,8 @@ class SubjectDetailsWidget extends StatelessWidget {
         // Study Plan Timeline
         Expanded(
           child: StudyPlanTimeline(
-            items: [
-              StudyPlanItem(
-                pageRange: 'من ص 12 إلى 87',
-                date: '10/6',
-                isCompleted: true,
-                backgroundColor: Colors.yellow[100]!,
-              ),
-              StudyPlanItem(
-                pageRange: 'من ص 89 إلى 143',
-                date: '10/7',
-                isCompleted: true,
-                backgroundColor: Colors.blue[100]!,
-              ),
-              StudyPlanItem(
-                pageRange: 'من ص 146 إلى 198',
-                date: '10/8',
-                isCompleted: false,
-                backgroundColor: Colors.green[100]!,
-              ),
-              StudyPlanItem(
-                pageRange: 'من ص 200 إلى 265',
-                date: '10/9',
-                isCompleted: false,
-                backgroundColor: Colors.lightBlue[100]!,
-              ),
-              StudyPlanItem(
-                pageRange: 'من ص 268 إلى 298',
-                date: '10/10',
-                isCompleted: false,
-                backgroundColor: Colors.yellow[100]!,
-              ),
-            ],
+            items: _studyPlanItems,
+            onRefresh: _loadSchedule,
           ),
         ),
       ],

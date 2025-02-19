@@ -195,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       padding: const EdgeInsets.only(bottom: 16.0),
                                       child: SubjectCard(
                                         subject: subject['subject'] as String,
-                                      semester: '',
+                                        semester: '',
                                         schedule: subject['hasSchedule'] == true ? 'جدول دراسي' : '',
                                         questions: subject['hasQuestions'] == true ? 'أسئلة' : '',
                                         onTap: (subjectName, semester) {
